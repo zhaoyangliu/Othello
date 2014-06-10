@@ -227,8 +227,11 @@ class Dragon:
             print("Greedy taken!!!")
 
         print(move[0]+1, move[1]+1)
+        print("original evaluation: ", self.evaluation(playerColor, oppColor))
+
         self.place_piece(move[0], move[1], playerColor, oppColor)
 
+        print("current evaluation: ", self.evaluation(playerColor, oppColor))
         return move
 
     def bad_move(self, move, playerColor, oppColor):
@@ -337,18 +340,71 @@ class Dragon:
         3. increase of corner 20' * n, lose of corner -20 * n
         4. corner around when corner is not taken diff opp - player
         '''
+
+        corner_set = [(0, 0), (0, 7), (7, 0), (7, 7)]
+        corner_around_set1 = [(0, 1), (0, 6), (1, 0), (1, 7), (6, 0), (6, 7), (7, 1), (7, 6)]
+        corner_around_set2 = [(1, 1), (1, 6), (6, 1), (6, 6) ]
+        second_side_set = [(2, 1), (3, 1), (4, 1), (5, 1), (1, 2), (1, 3), (1, 4), (1, 5),
+                           (2, 6), (3, 6), (4, 6), (5, 6), (6 ,2), (6, 3), (6, 4), (6, 5)]
+        edge_set = [(0, 2), (0, 3), (0, 4), (0, 5), (7, 2),  (7, 3), (7, 4), (7, 5),
+                    (2, 0), (3, 0), (4, 0), (5, 0), (2, 7), (3, 7), (4, 7), (5, 7)]
+
+        inside_set = []
+        for i in range (2, 6):
+            for j in range (2, 6):
+                inside_set.append((i,j))
+
         score = 0
-        score = self.get_score(playerColor) - self.score
 
         if self.no_step(oppColor, playerColor):
             score += 20
 
-        win_corner = self.get_corner(playerColor, oppColor)[0] - self.corner[0] \
-                     + self.corner[1] - self.get_corner(playerColor, oppColor)[1]
-        score += win_corner * 20
+        for place in edge_set:
+            if self.get_square(place[0], place[1]) is playerColor:
+                score += 10
+            elif self.get_square(place[0], place[1]) is oppColor:
+                score -= 10
 
-        caf = self.get_corner_around_diff(playerColor, oppColor) - self.origin_corner_around_diff
-        score -= caf * 10
+        for place in corner_set:
+            if self.get_square(place[0], place[1]) is playerColor:
+                score += 30
+            elif self.get_square(place[0], place[1]) is oppColor:
+                score -= 30
+
+        for place in corner_around_set1:
+            if self.get_square(place[0], place[1]) is playerColor:
+                score -= 20
+            elif self.get_square(place[0], place[1]) is oppColor:
+                score += 20
+
+        for place in corner_around_set2:
+            if self.get_square(place[0], place[1]) is playerColor:
+                score -= 25
+            elif self.get_square(place[0], place[1]) is oppColor:
+                score += 25
+
+        for place in second_side_set:
+            if self.get_square(place[0], place[1]) is playerColor:
+                score += 5
+            elif self.get_square(place[0], place[1]) is oppColor:
+                score -= 5
+
+        for place in inside_set:
+            if self.get_square(place[0], place[1]) is playerColor:
+                score += 1
+            elif self.get_square(place[0], place[1]) is oppColor:
+                score -= 1
+        #
+        # score = self.get_score(playerColor) - self.score
+        #
+
+        #
+        # win_corner = self.get_corner(playerColor, oppColor)[0] - self.corner[0] \
+        #              + self.corner[1] - self.get_corner(playerColor, oppColor)[1]
+        # score += win_corner * 20
+        #
+        # caf = self.get_corner_around_diff(playerColor, oppColor) - self.origin_corner_around_diff
+        # score -= caf * 10
 
         return score
 
@@ -464,10 +520,12 @@ class Dragon:
 
 def test():
     test_dragon = Dragon()
-    test_dragon.board[0][7] = 'W'
-    test_dragon.board[0][6] = 'W'
+    test_dragon.board[0][7] = 'B'
+    test_dragon.board[0][6] = 'B'
     test_dragon.board[7][6] = 'W'
-    print(test_dragon.get_corner_around_diff('B', 'W'))
+
+    test_dragon.PrintBoard()
+    print(test_dragon.evaluation('B', 'W'))
 
 
-#test()
+test()
