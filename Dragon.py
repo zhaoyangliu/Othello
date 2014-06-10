@@ -121,7 +121,7 @@ class Dragon:
             if self.get_square(corner[0], corner[1]) != " " and islegal(corner[0], corner[1], playerColor, oppColor):
                 greedy_move = (corner[0], corner[1])
             #condition 2
-            if 
+
         return None
 
     #Places piece of opponent's color at (row,col) and then returns
@@ -245,9 +245,10 @@ class Dragon:
                      + self.corner[1] - self.get_corner(playerColor, oppColor)[1]
         score += win_corner * 20
 
-        caf = self.get_corner_around_diff(playerColor, oppColor) - self.origin_corner_around_diff
+        # caf = self.get_corner_around_diff(playerColor, oppColor) - self.origin_corner_around_diff
+        #
+        # score -= caf * 10
 
-        score -= caf * 10
         return score
 
     #Search the game board for a legal move, and play the first one it finds
@@ -333,4 +334,11 @@ class Dragon:
         return max
 
 
+def test():
+    test_dragon = Dragon()
+    test_dragon.board[0][7] = 'W'
+    test_dragon.board[0][6] = 'W'
+    print(test_dragon.get_corner_around_diff('B', 'W'))
 
+
+test()
