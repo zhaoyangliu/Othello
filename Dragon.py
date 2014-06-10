@@ -108,7 +108,7 @@ class Dragon:
     def greedy(self, playerColor, oppColor):
         '''
         1. take up corner unconditionally
-        2. take up edges if no treat nearby
+        2. take up edges if no threat nearby
         3. make opponent no move
         4. irreversible move
         '''
@@ -228,7 +228,7 @@ class Dragon:
         inspected = False
         for pos in range(0, edge_len):
             if edge[pos] == oppColor:
-                if inspected == False:
+                if not inspected:
                     inspected = True
                 else:
                     continue
@@ -252,9 +252,11 @@ class Dragon:
                     elif edge[col] == playerColor:
                         right = playerColor
                         break
-                if left != None and right != None:
+                if (left is not None) and (right is not None):
                     if left != right:
                         return target
+            elif edge[pos] != oppColor:
+                inspected = False
         return None
 
     #Places piece of opponent's color at (row,col) and then returns
