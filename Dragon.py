@@ -109,7 +109,7 @@ class Dragon:
         '''
         1. take up corner unconditionally
         2. make opponent no move
-        3. untouchable move
+        3. irreversible move
         '''
         greedy_move = None
         corner_place = [(0,0), (0,7), (7,0), (7,7)]
@@ -122,11 +122,11 @@ class Dragon:
         #condition 2
         for i in range(self.size):
             for j in range(self.size):
-                if(self.board[i][j]==' ' and self.islegal(i, j, playerColor, oppColor)):
+                if self.board[i][j]==' ' and self.islegal(i, j, playerColor, oppColor):
                     tmp = copy.deepcopy(self.board)
                     self.place_piece(i, j, playerColor, oppColor)
                     if self.no_step(oppColor, playerColor):
-                        if greedy_move == None:
+                        if greedy_move is None:
                             greedy_move = (i, j)
                         #if opp has no move and for next step we still can move to a corner
                         else:
@@ -135,10 +135,44 @@ class Dragon:
                                     greedy_move = (i, j)
                     self.board = tmp
         #condition 3
-        # if greedy_move ==  None:
-        #     for corner in corner_place:
-        #         if self.get_square(corner[0], corner[1]) != " " and islegal(corner[0], corner[1], playerColor, oppColor):
-        #             greedy_move = (corner[0], corner[1])
+        if greedy_move is None:
+            edge_len = 8
+            for corner in corner_place:
+                #traverse four edges for irreversible move
+                if self.get_square(corner[0], corner[1]) != " ":
+                    for pos in range(1, edge_len - 1):
+                        if self.get_square(corner[0], abs(corner[1]-pos)) == " ":
+                            if self.islegal(corner[0], abs(corner[1]-pos), playerColor, oppColor):
+                                greedy_move = (corner[0], abs(corner[1]-pos))
+                            break
+                    for pos in range(1, edge_len - 1):
+                        if self.get_square(abs(corner[0] - pos), corner[1]) == " ":
+                            if self.islegal(abs(corner[0] - pos), corner[1], playerColor, oppColor):
+                                greedy_move = (abs(corner[0] - pos), corner[1])
+                            break
+                #traverse the triangle for irreversible move
+                if self.get_square(corner[0], corner[1]) != " " and greedy_move is None:
+                    for pos in range(1, edge_len):
+                        broken_line = False
+                        for s in range(0, pos):
+                            base = (s, pos - s - 1)
+                            corner_base = (abs(corner[0] - base[0]), abs(corner[1] - base[1]))
+                            if self.get_square(corner_base[0], corner_base[1]) == " ":
+                                broken_line = True
+                                if self.islegal(corner_base[0], corner_base[1], playerColor, oppColor):
+                                    greedy_move = corner_base
+                                break
+                        #check backwards
+                        if broken_line:
+                            for s in range(0, pos):
+                                base = (pos - s - 1, s)
+                                corner_base = (abs(corner[0] - base[0]), abs(corner[1] - base[1]))
+                                if self.get_square(corner_base[0], corner_base[1]) == " ":
+                                    if self.islegal(corner_base[0], corner_base[1], playerColor, oppColor):
+                                        greedy_move = corner_base
+                                    break
+                        if broken_line:
+                            break
         return greedy_move
 
 
