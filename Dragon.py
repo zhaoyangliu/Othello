@@ -134,12 +134,13 @@ class Dragon:
                 target = self.edge_takeup(edge, playerColor, oppColor)
                 if target is not None:
                     tmp = copy.deepcopy(self.board)
-                    self.place_piece(corner[0], target)
+                    self.place_piece(corner[0], target, playerColor, oppColor)
                     edge = []
                     for pos in range(0, edge_len):
                         edge.append(self.get_square(corner[0], abs(corner[1]-pos)))
-                    if self.edge_takeup(edge, playerColor, oppColor) is  None:
+                    if self.edge_takeup(edge, playerColor, oppColor) is None:
                         greedy_move = (corner[0], target)
+                        move_num = 2
                     self.board = tmp
 
                 #for vertical edge
@@ -150,12 +151,13 @@ class Dragon:
                     target = self.edge_takeup(edge, playerColor, oppColor)
                     if target is not None:
                         tmp = copy.deepcopy(self.board)
-                        self.place_piece(target, corner[1])
+                        self.place_piece(target, corner[1], playerColor, oppColor)
                         edge = []
                         for pos in range(0, edge_len):
                             edge.append(self.get_square(abs(corner[0] - pos), corner[1]))
-                        if self.edge_takeup(edge, playerColor, oppColor) is  None:
+                        if self.edge_takeup(edge, playerColor, oppColor) is None:
                             greedy_move = (target, corner[1])
+                            move_num = 2
                         self.board = tmp
 
         #condition 3
@@ -167,13 +169,13 @@ class Dragon:
                     if self.no_step(oppColor, playerColor):
                         if greedy_move is None:
                             greedy_move = (i, j)
-                            move_num = 2
+                            move_num = 3
                         #if opp has no move and for next step we still can move to a corner
                         else:
                             for corner in corner_place:
                                 if self.get_square(corner[0], corner[1]) != " " and self.islegal(corner[0], corner[1], playerColor, oppColor):
                                     greedy_move = (i, j)
-                                    move_num = 2
+                                    move_num = 3
                     self.board = tmp
         #condition 4
         if greedy_move is None:
@@ -184,13 +186,13 @@ class Dragon:
                         if self.get_square(corner[0], abs(corner[1]-pos)) == " ":
                             if self.islegal(corner[0], abs(corner[1]-pos), playerColor, oppColor):
                                 greedy_move = (corner[0], abs(corner[1]-pos))
-                                move_num = 3
+                                move_num = 4
                             break
                     for pos in range(1, edge_len - 1):
                         if self.get_square(abs(corner[0] - pos), corner[1]) == " ":
                             if self.islegal(abs(corner[0] - pos), corner[1], playerColor, oppColor):
                                 greedy_move = (abs(corner[0] - pos), corner[1])
-                                move_num = 3
+                                move_num = 4
                             break
                 #traverse the triangle for irreversible move
                 if self.get_square(corner[0], corner[1]) == playerColor and greedy_move is None:
@@ -203,7 +205,7 @@ class Dragon:
                                 broken_line = True
                                 if self.islegal(corner_base[0], corner_base[1], playerColor, oppColor):
                                     greedy_move = corner_base
-                                    move_num = 3
+                                    move_num = 4
                                 break
                         #check backwards
                         if broken_line:
@@ -213,14 +215,14 @@ class Dragon:
                                 if self.get_square(corner_base[0], corner_base[1]) == " ":
                                     if self.islegal(corner_base[0], corner_base[1], playerColor, oppColor):
                                         greedy_move = corner_base
-                                        move_num = 3
+                                        move_num = 4
                                     break
                         if broken_line:
                             break
         print("greedy move using condition: " + str(move_num))
         return greedy_move
 
-    def edge_takeup(edge, playerColor, oppColor):
+    def edge_takeup(self, edge, playerColor, oppColor):
         edge_len = 8
         target = None
         inspected = False
