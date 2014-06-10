@@ -157,17 +157,48 @@ class Dragon:
         self.origin_corner_around_diff = self.get_corner_around_diff(playerColor, oppColor)
         self.origin_board = copy.deepcopy(board)
 
-        move = None
         move = self.greedy(playerColor, oppColor)
+
+        move_set = []
+
         if move is None:
-            move = self.make_move(playerColor, oppColor)
+            for i in range(1, 20):
+                self.level = i
+                move = self.make_move(playerColor, oppColor)
+                move_set.append(move)
+                if time.time() - self.time > TIME_LIMIT:
+                    break
 
+            last_index = len(move_set) - 1
+            move = move_set[last_index]
+            last_index -= 1
 
+            while ( self.bad_move(move, playerColor, oppColor) or (not self.islegal(move[0], move[1], playerColor, oppColor)) ) and (last_index >= 0):
+                move = move_set[last_index]
+                last_index -= 1
+        else:
+            print("Greedy taken!!!")
 
         print(move[0]+1, move[1]+1)
         self.place_piece(move[0], move[1], playerColor, oppColor)
 
         return move
+
+    def bad_move(self, move, playerColor, oppColor):
+        corner_place = [(0,0), (0,7), (7,0), (7,7)]
+        corner_around =[ [(0, 1), (1, 0), (1, 1)], [(0, 6), (1, 6), (1, 7)],
+                        [(7, 1), (6, 0), (6, 1)], [(7, 6), (6, 7), (6, 6)] ]
+
+        for i in range(len(corner_place)):
+            if self.get_square(corner_place[i][0], corner_place[i][1]) is ' ':
+                if move in corner_around[i]:
+                    return True
+        return False
+
+
+
+
+
 
     #sets all tiles along a given direction (Dir) from a given starting point (col and row) for a given distance
     # (dist) to be a given value ( player )
@@ -263,9 +294,8 @@ class Dragon:
                      + self.corner[1] - self.get_corner(playerColor, oppColor)[1]
         score += win_corner * 20
 
-        # caf = self.get_corner_around_diff(playerColor, oppColor) - self.origin_corner_around_diff
-        #
-        # score -= caf * 10
+        caf = self.get_corner_around_diff(playerColor, oppColor) - self.origin_corner_around_diff
+        score -= caf * 10
 
         return score
 
@@ -276,15 +306,32 @@ class Dragon:
         move = ()
         self.score = self.get_score(playerColor)
         level = 0
+        move_back_up = ()
+        max_score_back_up = None
+
 
         for row in range(self.size):
             for col in range(self.size):
                 if(self.islegal(row,col,playerColor, oppColor)):
                     tmp_board = copy.deepcopy(self.board)
                     self.place_piece(row, col, playerColor, oppColor)
+
+                    # This part is for back up
+                    score_back_up = self.get_score(playerColor)
+                    if (max_score_back_up is None) or (score_back_up > max_score_back_up):
+                        max_score_back_up = score_back_up
+                        move_back_up = (row, col)
+
+                    # End of back up part
+
+
                     if self.is_end(playerColor, oppColor, level):
                         value = self.evaluation(playerColor, oppColor)
                         if time.time() - self.time > TIME_LIMIT:
+                            if (max == None) or (max < value):
+                                max = value
+                                move = (row, col)
+                            self.board = tmp_board
                             break
                     else:
                         value = self.min_value(oppColor, playerColor, value, level + 1)
@@ -295,7 +342,15 @@ class Dragon:
 
                     self.board = tmp_board
 
-        return move if (value is not None) else (-1, -1)
+        if value is not None:
+            if not self.islegal(move[0], move[1], playerColor, oppColor):
+                return move_back_up
+            else:
+                return move
+        else:
+            return (-1, -1)
+
+
 
     def min_value(self, playerColor, oppColor, alpha, level):
         min = None
@@ -310,8 +365,9 @@ class Dragon:
                     if self.is_end(playerColor, oppColor, level):
                         value = self.evaluation(playerColor, oppColor)
                         if time.time() - self.time > TIME_LIMIT:
-                            if min is None:
+                            if (min is None) or (min > value):
                                 min = value
+                            self.board = tmp_board
                             break
                     else:
                         value = self.max_value(oppColor, playerColor, value, level + 1)
@@ -337,8 +393,9 @@ class Dragon:
                     if self.is_end(playerColor, oppColor, level):
                         value = self.evaluation(playerColor, oppColor)
                         if time.time() - self.time > TIME_LIMIT:
-                            if max is None:
+                            if (max is None) or (max < value):
                                 max = value
+                            self.board = tmp_board
                             break
                     else:
                         value = self.min_value(oppColor, playerColor, value, level + 1)
@@ -356,7 +413,8 @@ def test():
     test_dragon = Dragon()
     test_dragon.board[0][7] = 'W'
     test_dragon.board[0][6] = 'W'
+    test_dragon.board[7][6] = 'W'
     print(test_dragon.get_corner_around_diff('B', 'W'))
 
 
-# test()
+#test()
