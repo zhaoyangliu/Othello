@@ -15,7 +15,7 @@ class Dragon2:
         # a list of unit vectors (row, col)
         self.directions = [ (-1,-1), (-1,0), (-1,1), (0,-1),(0,1),(1,-1),(1,0),(1,1)]
         self.score = 0
-        self.level = 6
+        self.level = 20
         self.time = 0
 
     #prints the boards

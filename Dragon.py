@@ -108,11 +108,14 @@ class Dragon:
     def greedy(self, playerColor, oppColor):
         '''
         1. take up corner unconditionally
-        2. make opponent no move
-        3. irreversible move
+        2. take up edges if no treat nearby
+        3. make opponent no move
+        4. irreversible move
         '''
-        greedy_move = None
         corner_place = [(0,0), (0,7), (7,0), (7,7)]
+        across_corner = [(0,0), (7,7)]
+        edge_len = 8
+        greedy_move = None
         move_num = 0
 
         # condition 1
@@ -122,6 +125,40 @@ class Dragon:
                 move_num = 1
 
         #condition 2
+        if greedy_move is None:
+            for corner in across_corner:
+                #for horizontal edge
+                edge = []
+                for pos in range(0, edge_len):
+                    edge.append(self.get_square(corner[0], abs(corner[1]-pos)))
+                target = self.edge_takeup(edge, playerColor, oppColor)
+                if target is not None:
+                    tmp = copy.deepcopy(self.board)
+                    self.place_piece(corner[0], target)
+                    edge = []
+                    for pos in range(0, edge_len):
+                        edge.append(self.get_square(corner[0], abs(corner[1]-pos)))
+                    if self.edge_takeup(edge, playerColor, oppColor) is  None:
+                        greedy_move = (corner[0], target)
+                    self.board = tmp
+
+                #for vertical edge
+                if greedy_move is None:
+                    edge = []
+                    for pos in range(0, edge_len):
+                        edge.append(self.get_square(abs(corner[0] - pos), corner[1]))
+                    target = self.edge_takeup(edge, playerColor, oppColor)
+                    if target is not None:
+                        tmp = copy.deepcopy(self.board)
+                        self.place_piece(target, corner[1])
+                        edge = []
+                        for pos in range(0, edge_len):
+                            edge.append(self.get_square(abs(corner[0] - pos), corner[1]))
+                        if self.edge_takeup(edge, playerColor, oppColor) is  None:
+                            greedy_move = (target, corner[1])
+                        self.board = tmp
+
+        #condition 3
         for i in range(self.size):
             for j in range(self.size):
                 if self.board[i][j]==' ' and self.islegal(i, j, playerColor, oppColor):
@@ -138,9 +175,8 @@ class Dragon:
                                     greedy_move = (i, j)
                                     move_num = 2
                     self.board = tmp
-        #condition 3
+        #condition 4
         if greedy_move is None:
-            edge_len = 8
             for corner in corner_place:
                 #traverse four edges for irreversible move
                 if self.get_square(corner[0], corner[1]) == playerColor:
@@ -184,6 +220,40 @@ class Dragon:
         print("greedy move using condition: " + str(move_num))
         return greedy_move
 
+    def edge_takeup(edge, playerColor, oppColor):
+        edge_len = 8
+        target = None
+        inspected = False
+        for pos in range(0, edge_len):
+            if edge[pos] == oppColor:
+                if inspected == False:
+                    inspected = True
+                else:
+                    continue
+                left = None
+                right = None
+                # left
+                for col in range(pos, -1, -1):
+                    if edge[col] == " ":
+                        left = " "
+                        target = col
+                        break
+                    elif edge[col] == playerColor:
+                        left = playerColor
+                        break
+                # right
+                for col in range(pos, edge_len):
+                    if edge[col] == " ":
+                        right = " "
+                        target = col
+                        break
+                    elif edge[col] == playerColor:
+                        right = playerColor
+                        break
+                if left != None and right != None:
+                    if left != right:
+                        return target
+        return None
 
     #Places piece of opponent's color at (row,col) and then returns
     #  the best move, determined by the make_move(...) function
@@ -335,7 +405,7 @@ class Dragon:
 
     def evaluation(self, playerColor, oppColor):
         '''
-        1. incraese of your piecse
+        1. increase of your pieces
         2. make opp no move 20'
         3. increase of corner 20' * n, lose of corner -20 * n
         4. corner around when corner is not taken diff opp - player
