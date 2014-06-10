@@ -14,7 +14,7 @@ Dragon.py is our player. Dragon2 is the default player which just scan next avai
 	def greedy(self, playerColor, oppColor):
 	def get_corner(self, playerColor, oppColor):
 	def no_step(self, playerColor, oppColor):	
-    </pre>j
+    </pre>
 * Implement iterative traversing and the picking strategy. Also bad_move function according to experience (Zhao Yang Liu)
 	
     <pre>
