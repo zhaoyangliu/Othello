@@ -212,7 +212,11 @@ class Dragon:
                 if time.time() - self.time > TIME_LIMIT:
                     break
 
-            last_index = len(move_set) - 1
+            if len(move_set) >= 2:
+                last_index = len(move_set) - 2
+            else:
+                last_index = len(move_set) - 1
+
             move = move_set[last_index]
             last_index -= 1
 
