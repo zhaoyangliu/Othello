@@ -272,7 +272,11 @@ class Dragon:
         self.origin_corner_around_diff = self.get_corner_around_diff(playerColor, oppColor)
         self.origin_board = copy.deepcopy(board)
 
-        move = self.greedy(playerColor, oppColor)
+        move = None
+        try:
+            move = self.greedy(playerColor, oppColor)
+        except:
+            move = None
 
         move_set = []
 
@@ -289,12 +293,18 @@ class Dragon:
             else:
                 last_index = len(move_set) - 1
 
+            tmp_index = last_index
+
             move = move_set[last_index]
             last_index -= 1
 
-            while ( self.bad_move(move, playerColor, oppColor) or (not self.islegal(move[0], move[1], playerColor, oppColor)) ) and (last_index >= 0):
-                move = move_set[last_index]
-                last_index -= 1
+            try:
+                while ( self.bad_move(move, playerColor, oppColor) or (not self.islegal(move[0], move[1], playerColor, oppColor)) ) and (last_index >= 0):
+                    move = move_set[last_index]
+                    last_index -= 1
+            except:
+                move = move_set[tmp_index]
+
         else:
             print("Greedy taken!!!")
 
@@ -315,6 +325,19 @@ class Dragon:
             if self.get_square(corner_place[i][0], corner_place[i][1]) is ' ':
                 if move in corner_around[i]:
                     return True
+
+
+        if (move[0] == 0 or move[0] == 7) and (move[1] > 1 and move[1] < 6):
+            if self.get_square(move[0], move[1] + 1) is oppColor and self.get_square(move[0], move[1] - 1) is ' ':
+                return False
+            if self.get_square(move[0], move[1] - 1) is oppColor and self.get_square(move[0], move[1] + 1) is ' ':
+                return False
+
+        if (move[1] == 0 or move[1] == 7) and (move[0] > 1 and move[0] < 6):
+            if self.get_square(move[0] + 1, move[1]) is oppColor and self.get_square(move[0] - 1, move[1]) is ' ':
+                return False
+            if self.get_square(move[0] - 1, move[1]) is oppColor and self.get_square(move[0] + 1, move[1]) is ' ':
+                return False
         return False
 
 
