@@ -113,11 +113,13 @@ class Dragon:
         '''
         greedy_move = None
         corner_place = [(0,0), (0,7), (7,0), (7,7)]
+        move_num = 0
 
         # condition 1
         for corner in corner_place:
             if self.get_square(corner[0], corner[1]) is " " and self.islegal(corner[0], corner[1], playerColor, oppColor):
                 greedy_move = (corner[0], corner[1])
+                move_num = 1
 
         #condition 2
         for i in range(self.size):
@@ -128,30 +130,34 @@ class Dragon:
                     if self.no_step(oppColor, playerColor):
                         if greedy_move is None:
                             greedy_move = (i, j)
+                            move_num = 2
                         #if opp has no move and for next step we still can move to a corner
                         else:
                             for corner in corner_place:
                                 if self.get_square(corner[0], corner[1]) != " " and self.islegal(corner[0], corner[1], playerColor, oppColor):
                                     greedy_move = (i, j)
+                                    move_num = 2
                     self.board = tmp
         #condition 3
         if greedy_move is None:
             edge_len = 8
             for corner in corner_place:
                 #traverse four edges for irreversible move
-                if self.get_square(corner[0], corner[1]) != " ":
+                if self.get_square(corner[0], corner[1]) == playerColor:
                     for pos in range(1, edge_len - 1):
                         if self.get_square(corner[0], abs(corner[1]-pos)) == " ":
                             if self.islegal(corner[0], abs(corner[1]-pos), playerColor, oppColor):
                                 greedy_move = (corner[0], abs(corner[1]-pos))
+                                move_num = 3
                             break
                     for pos in range(1, edge_len - 1):
                         if self.get_square(abs(corner[0] - pos), corner[1]) == " ":
                             if self.islegal(abs(corner[0] - pos), corner[1], playerColor, oppColor):
                                 greedy_move = (abs(corner[0] - pos), corner[1])
+                                move_num = 3
                             break
                 #traverse the triangle for irreversible move
-                if self.get_square(corner[0], corner[1]) != " " and greedy_move is None:
+                if self.get_square(corner[0], corner[1]) == playerColor and greedy_move is None:
                     for pos in range(1, edge_len):
                         broken_line = False
                         for s in range(0, pos):
@@ -161,6 +167,7 @@ class Dragon:
                                 broken_line = True
                                 if self.islegal(corner_base[0], corner_base[1], playerColor, oppColor):
                                     greedy_move = corner_base
+                                    move_num = 3
                                 break
                         #check backwards
                         if broken_line:
@@ -170,9 +177,11 @@ class Dragon:
                                 if self.get_square(corner_base[0], corner_base[1]) == " ":
                                     if self.islegal(corner_base[0], corner_base[1], playerColor, oppColor):
                                         greedy_move = corner_base
+                                        move_num = 3
                                     break
                         if broken_line:
                             break
+        print("greedy move using condition: " + str(move_num))
         return greedy_move
 
 
@@ -318,6 +327,12 @@ class Dragon:
         return player_corner_around - opp_corner_around
 
     def evaluation(self, playerColor, oppColor):
+        '''
+        1. incraese of your piecse
+        2. make opp no move 20'
+        3. increase of corner 20' * n, lose of corner -20 * n
+        4. corner around when corner is not taken diff opp - player
+        '''
         score = 0
         score = self.get_score(playerColor) - self.score
 
