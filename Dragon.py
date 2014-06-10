@@ -17,6 +17,8 @@ class Dragon:
         self.score = 0
         self.level = 4
         self.time = 0
+        self.corner = ()
+        self.origin_board = []
 
     #prints the boards
     def PrintBoard(self):
@@ -101,19 +103,30 @@ class Dragon:
 
         return legal
 
+
+    # Get a greedy move it exists
+    def greedy(playerColor, oppColor):
+        return None
+
+
     #Places piece of opponent's color at (row,col) and then returns
     #  the best move, determined by the make_move(...) function
     def play_square(self, row, col, playerColor, oppColor, board):
         # Place a piece of the opponent's color at (row,col)
-        if (row,col) != (-1,-1):
+        if (row,col) != (-1, -1):
             self.place_piece(row,col,oppColor,playerColor)
 
         # Determine best move and and return value to Matchmaker
 
         self.board = copy.deepcopy(board)
         self.time = time.time()
+        self.corner = self.get_corner(playerColor, oppColor)
+        self.origin_board = copy.deepcopy(board)
 
-        move = self.make_move(playerColor, oppColor)
+        move = self.greedy(playerColor, oppColor)
+        if move is not None:
+            move = self.make_move(playerColor, oppColor)
+
         print(move[0]+1, move[1]+1)
         self.place_piece(move[0], move[1], playerColor, oppColor)
 
@@ -146,6 +159,9 @@ class Dragon:
                     return False
         return True
 
+    def first_step_end(self, playerColor, oppColor):
+
+
     def is_end(self, playerColor, oppColor, level):
         if (level > self.level) or self.is_full() or self.no_step(oppColor, playerColor):
             return True
@@ -162,9 +178,34 @@ class Dragon:
                     return False
         return True
 
+    def get_corner(self, playerColor, oppColor):
+        player_corner = 0
+        opp_corner = 0
 
-    def evaluation(self, color):
-        score = self.get_score(color) - self.score
+        corner_place = [(0,0), (0,7), (7,0), (7,7)]
+
+        for corner in corner_place:
+            if self.get_square(corner[0], corner[1]) is playerColor:
+                player_corner += 1
+            elif self.get_square(corner[0], corner[1]) is oppColor:
+                opp_corner += 1
+
+        return (player_corner, opp_corner)
+
+
+
+    def evaluation(self, playerColor, oppColor):
+        score = 0
+        score = self.get_score(playerColor) - self.score
+
+        if self.no_step(oppColor, playerColor):
+            score += 20
+
+        win_corner = self.get_corner()[0] - self.corner[0] + self.corner[1] - self.get_corner()[1]
+        score += win_corner * 20
+
+
+
         return score
 
 
@@ -182,8 +223,8 @@ class Dragon:
                 if(self.islegal(row,col,playerColor, oppColor)):
                     tmp_board = copy.deepcopy(self.board)
                     self.place_piece(row, col, playerColor, oppColor)
-                    if self.is_end(playerColor, oppColor, level):
-                        value = self.evaluation(playerColor)
+                    if self.is_end(playerColor, oppColor, ):
+                        value = self.evaluation(playerColor, oppColor)
                         if time.time() - self.time > TIME_LIMIT:
                             break
                     else:
@@ -208,7 +249,7 @@ class Dragon:
                     self.place_piece(row, col, playerColor, oppColor)
 
                     if self.is_end(playerColor, oppColor, level):
-                        value = self.evaluation(playerColor)
+                        value = self.evaluation(playerColor, oppColor)
                         if time.time() - self.time > TIME_LIMIT:
                             if min is None:
                                 min = value
@@ -235,7 +276,7 @@ class Dragon:
                     self.place_piece(row, col, playerColor, oppColor)
 
                     if self.is_end(playerColor, oppColor, level):
-                        value = self.evaluation(playerColor)
+                        value = self.evaluation(playerColor, oppColor)
                         if time.time() - self.time > TIME_LIMIT:
                             if max is None:
                                 max = value

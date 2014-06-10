@@ -11,10 +11,9 @@ class Matchmaker:
     def __init__(self):
         self.board = [[' ']*8 for i in range(8)]
         self.size = 8
-        self.board[3][2] = 'W'
-        self.board[4][4] = 'B'
         self.board[3][4] = 'B'
         self.board[3][3] = 'W'
+        self.board[4][4] = 'W'
         self.board[4][3] = 'B'
         # a list of unit vectors (row, col)
         self.directions = [ (-1,-1), (-1,0), (-1,1), (0,-1),(0,1),(1,-1),(1,0),(1,1)]
