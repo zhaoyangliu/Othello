@@ -42,7 +42,7 @@ class Dragon:
             print()                           # End line
         print(linestr)
 
-    #checks every direction fromt the position which is input via "col" and "row", to see if there is an opponent piece
+    #checks every direction from the position which is input via "col" and "row", to see if there is an opponent piece
     #in one of the directions. If the input position is adjacent to an opponents piece, this function looks to see if there is a
     #a chain of opponent pieces in that direction, which ends with one of the players pieces.
     def islegal(self, row, col, player, opp):
@@ -104,11 +104,25 @@ class Dragon:
 
         return legal
 
-
     # Get a greedy move it exists
     def greedy(playerColor, oppColor):
-        return None
+        '''
+        1. take up corner unconditionally
+        2. make opponent no move
+        3. untouchable move
+        4.
+        no_step
+        '''
+        greedy_move = None
+        corner_place = [(0,0), (0,7), (7,0), (7,7)]
 
+        for corner in corner_place:
+            # condition 1
+            if self.get_square(corner[0], corner[1]) != " " and islegal(corner[0], corner[1], playerColor, oppColor):
+                greedy_move = (corner[0], corner[1])
+            #condition 2
+            if 
+        return None
 
     #Places piece of opponent's color at (row,col) and then returns
     #  the best move, determined by the make_move(...) function
@@ -164,8 +178,6 @@ class Dragon:
                     return False
         return True
 
-
-
     def is_end(self, playerColor, oppColor, level):
         if (level > self.level) or self.is_full() or self.no_step(oppColor, playerColor):
             return True
@@ -173,7 +185,6 @@ class Dragon:
             return True
 
         return False
-
 
     def no_step(self, playerColor, oppColor):
         for row in range(self.size):
@@ -223,7 +234,6 @@ class Dragon:
 
         return player_corner_around - opp_corner_around
 
-
     def evaluation(self, playerColor, oppColor):
         score = 0
         score = self.get_score(playerColor) - self.score
@@ -239,8 +249,6 @@ class Dragon:
 
         score -= caf * 10
         return score
-
-
 
     #Search the game board for a legal move, and play the first one it finds
     def make_move(self, playerColor, oppColor):
