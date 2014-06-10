@@ -110,19 +110,36 @@ class Dragon:
         1. take up corner unconditionally
         2. make opponent no move
         3. untouchable move
-        4.
-        no_step
         '''
         greedy_move = None
         corner_place = [(0,0), (0,7), (7,0), (7,7)]
 
+        # condition 1
         for corner in corner_place:
-            # condition 1
             if self.get_square(corner[0], corner[1]) != " " and islegal(corner[0], corner[1], playerColor, oppColor):
                 greedy_move = (corner[0], corner[1])
-            #condition 2
-            if 
-        return None
+
+        #condition 2
+        for i in range(self.size):
+            for j in range(self.size):
+                if(self.board[i][j]==' ' and islegal(i, j, playerColor, oppColor)):
+                    tmp = copy.deepcopy(self.board)
+                    place_piece(i, j, playerColor, oppColor)
+                    if no_step(oppColor, playerColor):
+                        if greedy_move == None:
+                            greedy_move = (i, j)
+                        #if opp has no move and for next step we still can move to a corner
+                        else:
+                            for corner in corner_place:
+                                if self.get_square(corner[0], corner[1]) != " " and islegal(corner[0], corner[1], playerColor, oppColor):
+                                    greedy_move = (i, j)
+                    self.board = tmp
+        #condition 3
+        if greedy_move ==  None:
+            for corner in corner_place:
+                if self.get_square(corner[0], corner[1]) != " " and islegal(corner[0], corner[1], playerColor, oppColor):
+                    greedy_move = (corner[0], corner[1])
+        return greedy_move
 
     #Places piece of opponent's color at (row,col) and then returns
     #  the best move, determined by the make_move(...) function
