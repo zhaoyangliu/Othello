@@ -18,6 +18,7 @@ class Dragon:
         self.level = 4
         self.time = 0
         self.corner = ()
+        self.origin_corner_around_diff = 0
         self.origin_board = []
 
     #prints the boards
@@ -121,11 +122,15 @@ class Dragon:
         self.board = copy.deepcopy(board)
         self.time = time.time()
         self.corner = self.get_corner(playerColor, oppColor)
+        self.origin_corner_around_diff = self.get_corner_around_diff(playerColor, oppColor)
         self.origin_board = copy.deepcopy(board)
 
-        move = self.greedy(playerColor, oppColor)
-        if move is not None:
+        move = None
+        # move = self.greedy(playerColor, oppColor)
+        if move is None:
             move = self.make_move(playerColor, oppColor)
+
+
 
         print(move[0]+1, move[1]+1)
         self.place_piece(move[0], move[1], playerColor, oppColor)
@@ -159,7 +164,6 @@ class Dragon:
                     return False
         return True
 
-    def first_step_end(self, playerColor, oppColor):
 
 
     def is_end(self, playerColor, oppColor, level):
@@ -192,6 +196,32 @@ class Dragon:
 
         return (player_corner, opp_corner)
 
+    # input a set like [(1,2), (2,3)], output how many player tile in this set and how many opp tile.
+    def get_square_num_from_set(self, square_set, playerColor, oppColor):
+        player_count = 0
+        opp_count = 0
+
+        for square in square_set:
+            if self.get_square(square[0], square[1]) is playerColor:
+                player_count += 1
+            elif self.get_square(square[0], square[1]) is oppColor:
+                opp_count += 1
+        return (player_count, opp_count)
+
+    def get_corner_around_diff(self, playerColor, oppColor):
+        corner_place = [(0,0), (0,7), (7,0), (7,7)]
+        corner_around =[ [(0, 1), (1, 0), (1, 1)], [(0, 6), (1, 6), (1, 7)],
+                        [(7, 1), (6, 0), (6, 1)], [(7, 6), (6, 7), (6, 6)] ]
+
+        player_corner_around = 0
+        opp_corner_around = 0
+
+        for i in range(len(corner_place)):
+            if self.get_square(corner_place[i][0], corner_place[i][1]) is ' ':
+                player_corner_around += self.get_square_num_from_set(corner_around[i], playerColor, oppColor)[0]
+                opp_corner_around += self.get_square_num_from_set(corner_around[i], playerColor, oppColor)[1]
+
+        return player_corner_around - opp_corner_around
 
 
     def evaluation(self, playerColor, oppColor):
@@ -201,11 +231,13 @@ class Dragon:
         if self.no_step(oppColor, playerColor):
             score += 20
 
-        win_corner = self.get_corner()[0] - self.corner[0] + self.corner[1] - self.get_corner()[1]
+        win_corner = self.get_corner(playerColor, oppColor)[0] - self.corner[0] \
+                     + self.corner[1] - self.get_corner(playerColor, oppColor)[1]
         score += win_corner * 20
 
+        caf = self.get_corner_around_diff(playerColor, oppColor) - self.origin_corner_around_diff
 
-
+        score -= caf * 10
         return score
 
 
@@ -223,7 +255,7 @@ class Dragon:
                 if(self.islegal(row,col,playerColor, oppColor)):
                     tmp_board = copy.deepcopy(self.board)
                     self.place_piece(row, col, playerColor, oppColor)
-                    if self.is_end(playerColor, oppColor, ):
+                    if self.is_end(playerColor, oppColor, level):
                         value = self.evaluation(playerColor, oppColor)
                         if time.time() - self.time > TIME_LIMIT:
                             break
