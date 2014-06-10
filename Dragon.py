@@ -528,4 +528,4 @@ def test():
     print(test_dragon.evaluation('B', 'W'))
 
 
-test()
+# test()
